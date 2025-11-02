@@ -70,5 +70,41 @@ app.post("/api/workspaces", async (req, res) => {
     });
   }
 });
+app.post("/api/login", async (req, res) => {
+  console.log(req.body, "bidyuu");
+
+  const { clientId, clientSecret } = req.body;
+
+  console.log("Incoming body:", req.body);
+
+  if (!clientId || !clientSecret) {
+    return res.status(400).json({ error: "Missing clientId or clientSecret" });
+  }
+
+  try {
+    const params = new URLSearchParams();
+    params.append("client_id", clientId);
+    params.append("client_secret", clientSecret);
+    params.append("grant_type", "client_credentials");
+
+    const tokenResponse = await axios.post(
+      `${API_BASE_URL}/auth/token`,
+      params,
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Accept: "application/json",
+        },
+      }
+    );
+
+    res.json(tokenResponse?.data);
+  } catch (err) {
+    console.error("❌ Error:", err.response?.data || err.message);
+    res.status(err.response?.status || 500).json({
+      error: err.response?.data || err.message,
+    });
+  }
+});
 
 app.listen(5000, () => console.log("✅ Server running on port 5000"));
